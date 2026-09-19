@@ -9,7 +9,7 @@ interface CacheInvalidationMessage {
 
 export const startCacheConsumer = async () => {
   try {
-   const connection = await amqp.connect({
+    const connection = await amqp.connect({
       protocol: "amqp",
       hostname: process.env.rabbitmq_host,
       port: 5672,
@@ -17,7 +17,28 @@ export const startCacheConsumer = async () => {
       password: process.env.rabbitmq_password,
     });
 
+    // Add error handler for connection
+    connection.on("error", (err) => {
+      console.error("❌ RabbitMQ connection error:", err.message);
+    });
+
+    connection.on("close", () => {
+      console.log(
+        "⚠️ RabbitMQ connection closed. Attempting to reconnect in 5 seconds..."
+      );
+      setTimeout(startCacheConsumer, 5000);
+    });
+
     const channel = await connection.createChannel();
+
+    // Add error handler for channel
+    channel.on("error", (err) => {
+      console.error("❌ RabbitMQ channel error:", err.message);
+    });
+
+    channel.on("close", () => {
+      console.log("⚠️ RabbitMQ channel closed");
+    });
 
     const queueName = "cache-invalidation";
 
@@ -78,6 +99,8 @@ export const startCacheConsumer = async () => {
       }
     });
   } catch (error) {
-    console.error("❌ Failed to start rabbitmq consumer");
+    console.error("❌ Failed to start rabbitmq consumer:", error);
+    console.log("⚠️ Retrying connection in 5 seconds...");
+    setTimeout(startCacheConsumer, 5000);
   }
 };

@@ -16,6 +16,10 @@ await startCacheConsumer();
 
 export const redisClient = createClient({
     url:process.env.REDIS_URL,
+    socket: {
+    host: "improved-buzzard-8214.upstash.io", // extract from your URL
+    tls: true,
+  },
 });
 
 redisClient.connect().then(()=>{
