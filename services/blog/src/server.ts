@@ -30,6 +30,6 @@ app.use("/api/v1",blogRoutes);
 const PORT = process.env.PORT;
 
 app.listen(PORT,()=>{
-    console.log("This is to test github-jenkins webhook")
+    console.log("This is to test github-jenkins webhook and gitSCM trigger")
     console.log(`Listening on port ${PORT}`);
 })
