@@ -55,7 +55,11 @@ export const getSingleBlog = TryCatch(async(req,res)=>{
     return;
     }
 
+    console.log("hello")
+
     const blogs = await sql`SELECT * FROM blogs WHERE id = ${blogid}`;
+
+    console.log(blogs);
    
 if(blogs.length === 0){
     res.status(404).json({
@@ -65,10 +69,13 @@ if(blogs.length === 0){
 }
 
     const {data}  = await axios.get(`${process.env.USER_SERVICE}/api/v1/user/${blogs[0].author}`)
+    console.log("daaa",data);
 
     const cachedData = {blogs:blogs[0], author:data};
 
     await redisClient.set(cacheKey,JSON.stringify(cachedData),{EX:3600});
+
+    console.log(blogs[0]);
 
     res.json({blogs:blogs[0],author:data})
 

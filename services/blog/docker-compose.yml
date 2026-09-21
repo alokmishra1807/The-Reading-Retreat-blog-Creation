@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8080:5002"
+    env_file:
+      - .env
+    networks:
+      - blog-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-container
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    networks:
+      - blog-network
+
+networks:
+  blog-network:
+    
