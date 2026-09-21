@@ -1,0 +1,56 @@
+pipeline {
+    agent {label "dev"}
+    
+    stages{
+        stage('clone repo'){
+           steps{
+               git url: "https://github.com/alokmishra1807/The-Reading-Retreat-blog-Creation.git", branch:"main"
+           }
+        }
+        stage('Build Blog') {
+          steps {
+              dir('services/blog') {
+                     sh 'docker build -t blog_service .'
+        }
+    }
+}
+          stage("Push to Docker Hub") {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: "DockerHubCreds",
+                        usernameVariable: "dockerHubUser",
+                        passwordVariable: "dockerHubPass"
+                    )
+                ]) {
+                    sh "docker login -u ${dockerHubUser} -p ${dockerHubPass}"
+
+                    sh "docker tag blog_service ${dockerHubUser}/blog_service:latest"
+
+                    sh "docker push ${dockerHubUser}/blog_service:latest"
+                }
+            }
+        }
+
+          
+   stage('Deploy') {
+    steps {
+        dir('services/blog') {
+            withCredentials([
+                file(credentialsId: 'blog-env', variable: 'ENV_FILE')
+            ]) {
+                sh '''
+                    rm -f .env
+                    cp "$ENV_FILE" .env
+                    chmod 600 .env
+
+                    docker compose up -d --build
+                '''
+            }
+        }
+    }
+}
+        
+        }
+    
+}

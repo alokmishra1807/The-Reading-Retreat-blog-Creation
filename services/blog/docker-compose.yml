@@ -1,7 +1,6 @@
 services:
   app:
-    build:
-      context: .
+    image: alokmishra773/blog_service:latest
     ports:
       - "8080:5002"
     env_file:
